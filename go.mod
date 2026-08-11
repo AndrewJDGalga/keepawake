@@ -1,4 +1,4 @@
-module github.com/AndrewJDGalga/mousejiggler
+module github.com/AndrewJDGalga/keep_awake
 
 go 1.26.5
 
