@@ -1,4 +1,4 @@
-package main
+package keepawake
 
 import "golang.org/x/sys/windows"
 

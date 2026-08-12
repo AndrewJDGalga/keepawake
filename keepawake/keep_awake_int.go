@@ -1,4 +1,4 @@
-package main
+package keepawake
 
 type KeepAwake interface {
 	Start() error
