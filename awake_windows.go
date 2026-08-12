@@ -1,27 +1,33 @@
 package main
 
-import (
-	"golang.org/x/sys/windows"
+import "golang.org/x/sys/windows"
+
+const (
+	// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
+	SYS_CONTINOUS_STATE = 0x80000000
+	SYS_WORKING_STATE   = 0x00000001
+	SYS_DISPLAY_REQ     = 0x00000002
 )
-
-// https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
-type MouseInput struct {
-	Dx, Dy      int32  //LONG
-	MouseData   uint32 //DWORD
-	DwFlags     uint32
-	Time        uint32
-	DwExtraInfo uintptr
-}
-
-// https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-input
-type Input struct {
-	Type uint32
-	Mi   MouseInput
-}
-
-const MOUSE_EVENT_MOVE = 0x0001
 
 var (
-	userProc = windows.NewLazySystemDLL("user32.dll")
-	pInput   = userProc.NewProc("SendInput")
+	winKernal        = windows.NewLazySystemDLL("kernel32.dll")
+	pThreadExecState = winKernal.NewProc("SetThreadExecutionState")
 )
+
+type windowsAwake struct{}
+
+func New() KeepAwake {
+	return &windowsAwake{}
+}
+
+func (w *windowsAwake) Start() error {
+	_, _, err := pThreadExecState.Call(
+		SYS_CONTINOUS_STATE |
+			SYS_WORKING_STATE |
+			SYS_DISPLAY_REQ,
+	)
+}
+
+func (w *windowsAwake) Stop() error {
+
+}
