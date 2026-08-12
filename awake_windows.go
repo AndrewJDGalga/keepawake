@@ -21,13 +21,24 @@ func New() KeepAwake {
 }
 
 func (w *windowsAwake) Start() error {
-	_, _, err := pThreadExecState.Call(
+	prevState, _, err := pThreadExecState.Call(
 		SYS_CONTINOUS_STATE |
 			SYS_WORKING_STATE |
 			SYS_DISPLAY_REQ,
 	)
+	if prevState == 0 {
+		return err
+	}
+	return nil
 }
 
 func (w *windowsAwake) Stop() error {
-
+	//somehow the reset state is setting simply continous
+	prevState, _, err := pThreadExecState.Call(
+		SYS_CONTINOUS_STATE,
+	)
+	if prevState == 0 {
+		return err
+	}
+	return nil
 }
