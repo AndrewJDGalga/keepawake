@@ -22,7 +22,7 @@ func (l *linuxAwake) Start() error {
 	}
 	l.conn = conn
 
-	obj := conn.Object("org.freedesktop.login1", "org/freedesktop/login1")
+	obj := conn.Object("org.freedesktop.login1", "/org/freedesktop/login1")
 	call := obj.Call(
 		//needs what, who, why, mode
 		"org.freedesktop.login1.Manager.Inhibit",
