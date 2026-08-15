@@ -11,9 +11,28 @@ func New() KeepAwake {
 	return &linuxAwake{}
 }
 
-func (w *linuxAwake) Start() error {
+func (l *linuxAwake) Start() error {
+	conn, err := dbus.ConnectSystemBus()
+	if err != nil {
+		return err
+	}
+	l.conn = conn
 
-	return nil
+	obj := conn.Object("org.freedesktop.login1", "org/freedesktop/login1")
+	call := obj.Call(
+		//needs what, who, why, mode
+		"org.freedesktop.login1.Manager.Inhibit",
+		0,
+		"idle:sleep",
+		"keepawake",
+		"USer requested keepawake",
+		"block",
+	)
+	if call.Err != nil {
+		return call.Err
+	}
+
+	return call.Store(&l.fd)
 }
 
 func (w *linuxAwake) Stop() error {

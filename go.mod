@@ -1,4 +1,4 @@
-module github.com/AndrewJDGalga/keep_awake
+module github.com/AndrewJDGalga/keepawake
 
 go 1.26.5
 

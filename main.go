@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AndrewJDGalga/keep_awake/keepawake"
+	"github.com/AndrewJDGalga/keepawake/keepawake"
 )
 
 func main() {
