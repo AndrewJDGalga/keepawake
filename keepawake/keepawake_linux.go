@@ -1,6 +1,10 @@
 package keepawake
 
-import "github.com/godbus/dbus/v5"
+import (
+	"syscall"
+
+	"github.com/godbus/dbus/v5"
+)
 
 type linuxAwake struct {
 	conn *dbus.Conn
@@ -35,7 +39,11 @@ func (l *linuxAwake) Start() error {
 	return call.Store(&l.fd)
 }
 
-func (w *linuxAwake) Stop() error {
+func (l *linuxAwake) Stop() error {
+	//unixfd is int32 but syscall.close(int), weird
+	if err := syscall.Close(int(l.fd)); err != nil {
+		return err
+	}
 
-	return nil
+	return l.conn.Close()
 }
