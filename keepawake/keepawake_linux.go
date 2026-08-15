@@ -1,6 +1,11 @@
 package keepawake
 
-type linuxAwake struct{}
+import "github.com/godbus/dbus/v5"
+
+type linuxAwake struct {
+	conn *dbus.Conn
+	fd   dbus.UnixFD
+}
 
 func New() KeepAwake {
 	return &linuxAwake{}
