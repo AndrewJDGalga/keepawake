@@ -7,8 +7,10 @@ import (
 )
 
 type linuxAwake struct {
-	conn *dbus.Conn
-	fd   dbus.UnixFD
+	sysConn  *dbus.Conn
+	fd       dbus.UnixFD
+	sessConn *dbus.Conn
+	cookie   uint32
 }
 
 func New() KeepAwake {
@@ -20,7 +22,7 @@ func (l *linuxAwake) Start() error {
 	if err != nil {
 		return err
 	}
-	l.conn = sysConn
+	l.sysConn = sysConn
 
 	sysObj := sysConn.Object("org.freedesktop.login1", "/org/freedesktop/login1")
 	sysCall := sysObj.Call(
@@ -44,7 +46,7 @@ func (l *linuxAwake) Start() error {
 	if err != nil {
 		return err
 	}
-	l.conn = sessConn
+	l.sessConn = sessConn
 
 	sessObj := sessConn.Object("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver")
 	sessCall := sessObj.Call(
@@ -57,14 +59,18 @@ func (l *linuxAwake) Start() error {
 		return sessCall.Err
 	}
 
-	return sessCall.Store(&l.fd)
+	return sessCall.Store(&l.cookie)
 }
 
 func (l *linuxAwake) Stop() error {
-	//unixfd is int32 but syscall.close(int), weird
 	if err := syscall.Close(int(l.fd)); err != nil {
 		return err
 	}
+	l.sysConn.Close()
 
-	return l.conn.Close()
+	if err := syscall.Close(int(l.cookie)); err != nil {
+		return err
+	}
+
+	return l.sessConn.Close()
 }
