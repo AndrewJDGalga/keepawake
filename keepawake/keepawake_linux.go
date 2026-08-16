@@ -66,10 +66,13 @@ func (l *linuxAwake) Stop() error {
 	if err := syscall.Close(int(l.fd)); err != nil {
 		return err
 	}
-	l.sysConn.Close()
-
-	if err := syscall.Close(int(l.cookie)); err != nil {
+	if err := l.sysConn.Close(); err != nil {
 		return err
+	}
+
+	sessObj := l.sessConn.Object("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver")
+	if call := sessObj.Call("org.freedesktop.ScreenSaver.UnInhibit", 0, l.cookie); call.Err != nil {
+		return call.Err
 	}
 
 	return l.sessConn.Close()
