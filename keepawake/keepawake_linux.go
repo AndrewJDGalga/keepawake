@@ -16,27 +16,48 @@ func New() KeepAwake {
 }
 
 func (l *linuxAwake) Start() error {
-	conn, err := dbus.ConnectSystemBus()
+	sysConn, err := dbus.ConnectSystemBus()
 	if err != nil {
 		return err
 	}
-	l.conn = conn
+	l.conn = sysConn
 
-	obj := conn.Object("org.freedesktop.login1", "/org/freedesktop/login1")
-	call := obj.Call(
+	sysObj := sysConn.Object("org.freedesktop.login1", "/org/freedesktop/login1")
+	sysCall := sysObj.Call(
 		//needs what, who, why, mode
 		"org.freedesktop.login1.Manager.Inhibit",
 		0,
 		"idle:sleep",
 		"keepawake",
-		"USer requested keepawake",
+		"User requested keepawake",
 		"block",
 	)
-	if call.Err != nil {
-		return call.Err
+	if sysCall.Err != nil {
+		return sysCall.Err
 	}
 
-	return call.Store(&l.fd)
+	if err := sysCall.Store(&l.fd); err != nil {
+		return err
+	}
+
+	sessConn, err := dbus.ConnectSessionBus()
+	if err != nil {
+		return err
+	}
+	l.conn = sessConn
+
+	sessObj := sessConn.Object("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver")
+	sessCall := sessObj.Call(
+		"org.freedesktop.ScreenSaver.Inhibit",
+		0,
+		"keepawake",
+		"User requested keepawake",
+	)
+	if sessCall.Err != nil {
+		return sessCall.Err
+	}
+
+	return sessCall.Store(&l.fd)
 }
 
 func (l *linuxAwake) Stop() error {
